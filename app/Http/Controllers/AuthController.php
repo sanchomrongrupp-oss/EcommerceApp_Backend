@@ -20,6 +20,7 @@ class AuthController extends Controller
             'last_name'      => 'required|string|max:255',
             'gender'         => 'required|string|max:255',
             'date_of_birth'  => 'required|date',
+            'phone'          => 'required|string|max:255',
             'email'          => 'required|email|unique:users,email',
             'password'       => 'required|string|min:8',
         ]);
@@ -29,6 +30,7 @@ class AuthController extends Controller
             'last_name'      => $validated['last_name'],
             'gender'         => $validated['gender'],
             'date_of_birth'  => $validated['date_of_birth'],
+            'phone'          => $validated['phone'],
             'email'          => $validated['email'],
             'password'       => Hash::make($validated['password']),
         ]);
@@ -45,6 +47,7 @@ class AuthController extends Controller
             'last_name'      => 'required|string|max:255',
             'gender'         => 'required|string|max:255',
             'date_of_birth'  => 'required|date',
+            'phone'          => 'required|string|max:255',
             'email'          => 'required|email|unique:users,email',
             'password'       => 'required|string|min:8',
             'role'           => 'required|string|in:admin',
@@ -55,6 +58,7 @@ class AuthController extends Controller
             'last_name'      => $validated['last_name'],
             'gender'         => $validated['gender'],
             'date_of_birth'  => $validated['date_of_birth'],
+            'phone'          => $validated['phone'],
             'email'          => $validated['email'],
             'password'       => Hash::make($validated['password']),
             'role'           => $validated['role'],

@@ -16,7 +16,27 @@ class Product extends Model
     // Define which fields can be filled
     protected $fillable = [
         'title',
+        'image',
         'description',
-        'price'
+        'size',
+        'color',
+        'price',
+        'category',
+        'rating',
+        'group_product_id'
     ];
+
+    // Cast size and color to array
+    protected $casts = [
+        'size' => 'array',
+        'color' => 'array',
+        'rating' => 'array',
+        'group_product_id' => 'array',
+    ];
+
+    // Get the group product that owns the product
+    public function group()
+    {
+        return $this->belongsTo(GroupProduct::class, 'group_product_id');
+    }
 }

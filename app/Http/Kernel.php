@@ -28,5 +28,7 @@ class Kernel extends HttpKernel
         'precognitive' => \Illuminate\Foundation\Http\Middleware\HandlePrecognitiveRequests::class,
         // YOUR JWT MIDDLEWARE
         'jwt.verify' => \App\Http\Middleware\JwtMiddleware::class,
+        'auth.jwt' => \App\Http\Middleware\JwtMiddleware::class,
+        'admin' => \App\Http\Middleware\AdminMiddleware::class,
     ];
 }

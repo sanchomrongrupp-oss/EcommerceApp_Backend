@@ -6,6 +6,7 @@ use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Exception;
 
@@ -43,7 +44,7 @@ class ProductController extends Controller
     public function show($id)
     {
         try {
-            $product = Product::with('group')->findOrFail($id);
+            $product = Product::with('groups')->findOrFail($id);
             return response()->json([
                 'success' => true,
                 'data' => $product
@@ -62,15 +63,11 @@ class ProductController extends Controller
     {
         try {
             $validator = Validator::make($request->all(), [
+                'category_id' => 'required|exists:categories,id',
                 'title' => 'required|string|max:255',
-                'image' => 'required', // Can be file or string (URL)
                 'description' => 'required|string',
-                'size' => 'required|array',   // Changed to array
-                'color' => 'required|array',  // Changed to array
-                'price' => 'required|numeric',
-                'category' => 'required|string',
-                'rating' => 'nullable|array',
-                'group_product_id' => 'nullable|array'
+                'image' => 'required', // Can be file or string (URL)
+                    'price' => 'required|numeric',
             ]);
 
             if ($validator->fails()) {
@@ -87,6 +84,8 @@ class ProductController extends Controller
 
             $product = Product::create($data);
 
+            Log::info("Product Created: [{$product->id}] {$product->title}");
+
             return response()->json(['success' => true, 'data' => $product], 201);
         } catch (Exception $e) {
             return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
@@ -102,15 +101,11 @@ class ProductController extends Controller
             $product = Product::findOrFail($id);
 
             $validator = Validator::make($request->all(), [
+                'category_id' => 'required|exists:categories,id',
                 'title' => 'sometimes|required|string|max:255',
-                'image'=> 'sometimes|required', // Can be file or string (URL)
                 'description' => 'sometimes|required|string',
-                'size'=> 'sometimes|required|array',   // Changed to array
-                'color'=> 'sometimes|required|array',  // Changed to array
+                'image'=> 'sometimes|required',
                 'price' => 'sometimes|required|numeric',
-                'category' => 'sometimes|required|string',
-                'rating' => 'nullable|array',
-                'group_product_id' => 'nullable|array'
             ]);
 
             if ($validator->fails()) {
@@ -119,11 +114,9 @@ class ProductController extends Controller
 
             $data = $request->all();
 
-            // Handle file upload
             if ($request->hasFile('image')) {
-                // Optional: Delete old image if it was a local file
-                if ($product->image && str_contains($product->image, '/storage/')) {
-                    $oldPath = str_replace('/storage/', '', $product->image);
+                if ($product->image && str_contains($product->image, 'public/storage/')) {
+                    $oldPath = str_replace('public/storage/', '', $product->image);
                     Storage::disk('public')->delete($oldPath);
                 }
 
@@ -132,6 +125,8 @@ class ProductController extends Controller
             }
 
             $product->update($data);
+
+            Log::info("Product Updated: [{$product->id}] {$product->title}");
 
             return response()->json(['success' => true, 'data' => $product], 200);
         } catch (ModelNotFoundException $e) {

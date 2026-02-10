@@ -19,18 +19,16 @@ return [
 ],
 
 'guards' => [
+    'web' => [
+        'driver' => 'session',
+        'provider' => 'users',
+    ],
     'api' => [
-        'driver' => 'jwt', // Must be jwt, not sanctum or session
+        'driver' => 'jwt',
         'provider' => 'users',
     ],
 ],
 
-'providers' => [
-    'users' => [
-        'driver' => 'eloquent',
-        'model' => App\Models\User::class, // Points to your MongoDB User model
-    ],
-],
 
     /*
     |--------------------------------------------------------------------------

@@ -15,28 +15,34 @@ class Product extends Model
 
     // Define which fields can be filled
     protected $fillable = [
+        'category_id',
         'title',
-        'image',
         'description',
-        'size',
-        'color',
+        'image',
         'price',
-        'category',
-        'rating',
-        'group_product_id'
+        'rating_avg',
+        'rating_count',
     ];
 
     // Cast size and color to array
     protected $casts = [
-        'size' => 'array',
-        'color' => 'array',
-        'rating' => 'array',
-        'group_product_id' => 'array',
+        'rating_avg' => 'float',
+        'rating_count' => 'integer',
     ];
 
-    // Get the group product that owns the product
-    public function group()
+    // Get the category that the product belongs to
+    public function category()
     {
-        return $this->belongsTo(GroupProduct::class, 'group_product_id');
+        return $this->belongsTo(Category::class);
+    }
+
+    public function variants()
+    {
+        return $this->hasMany(ProductVariants::class);
+    }
+
+    public function wishlists()
+    {
+        return $this->hasMany(Wishlists::class);
     }
 }

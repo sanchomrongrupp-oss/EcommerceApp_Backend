@@ -1,4 +1,4 @@
-# Use official PHP image
+# Use official PHP CLI image
 FROM php:8.2-cli
 
 # Install system dependencies
@@ -10,7 +10,8 @@ RUN apt-get update && apt-get install -y \
     libpng-dev \
     libonig-dev \
     libxml2-dev \
-    zip
+    zip \
+    && rm -rf /var/lib/apt/lists/*
 
 # Install PHP extensions
 RUN docker-php-ext-install pdo pdo_mysql mbstring zip exif pcntl
@@ -33,11 +34,11 @@ RUN composer install --no-dev --optimize-autoloader
 # Set permissions
 RUN chmod -R 775 storage bootstrap/cache
 
-# Expose port (Render uses 10000)
+# Create storage symlink (ignore error if exists)
+RUN php artisan storage:link || true
+
+# Expose port for Render
 EXPOSE 10000
 
-# Start Laravel server
-CMD php artisan serve --host=0.0.0.0 --port=10000
-
-# Create storage symlink
-RUN php artisan storage:link || true
+# Start Laravel server (this is the final CMD)
+CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=10000"]

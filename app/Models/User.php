@@ -21,10 +21,18 @@ class User extends Authenticatable implements JWTSubject
         'date_of_birth',
         'email',
         'password',
-        'role'
+        'role',
+        'profile_image'
     ];
 
     protected $hidden = ['password', 'remember_token'];
+
+    protected $appends = ['profile_image_url'];
+
+    public function getProfileImageUrlAttribute()
+    {
+        return $this->profile_image ? url($this->profile_image) : null;
+    }
 
     public function getJWTIdentifier() {
         return $this->getKey();

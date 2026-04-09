@@ -25,13 +25,29 @@ class ProductController extends Controller
                 $query->where('group_product_id', $request->group_product_id);
             }
 
-            $products = $query->get();
+            // Optional filtering by category title
+            if ($request->has('category')) {
+                $categoryTitle = $request->category;
+                $query->whereHas('category', function ($q) use ($categoryTitle) {
+                    $q->where('title', 'like', '%' . $categoryTitle . '%');
+                });
+            }
+
+            $perPage = $request->get('per_page', 10);
+            $products = $query->paginate($perPage);
 
             return response()->json([
                 'success' => true,
                 'message' => 'Products retrieved successfully',
-                'data' => $products,
-                'count' => $products->count()
+                'data' => $products->items(),
+                'pagination' => [
+                    'current_page' => $products->currentPage(),
+                    'last_page' => $products->lastPage(),
+                    'per_page' => $products->perPage(),
+                    'total' => $products->total(),
+                    'next_page_url' => $products->nextPageUrl(),
+                    'prev_page_url' => $products->previousPageUrl(),
+                ]
             ], 200);
         } catch (Exception $e) {
             return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
@@ -63,7 +79,7 @@ class ProductController extends Controller
     {
         try {
             $validator = Validator::make($request->all(), [
-                'category_id' => 'required|exists:categories,id',
+                'category_id' => 'required|exists:categories,_id',
                 'title' => 'required|string|max:255',
                 'description' => 'required|string',
                 'image' => 'required', // Can be file or string (URL)
@@ -101,7 +117,7 @@ class ProductController extends Controller
             $product = Product::findOrFail($id);
 
             $validator = Validator::make($request->all(), [
-                'category_id' => 'required|exists:categories,id',
+                'category_id' => 'required|exists:categories,_id',
                 'title' => 'sometimes|required|string|max:255',
                 'description' => 'sometimes|required|string',
                 'image'=> 'sometimes|required',
@@ -147,6 +163,31 @@ class ProductController extends Controller
             return response()->json(['success' => true, 'message' => 'Product deleted successfully'], 200);
         } catch (ModelNotFoundException $e) {
             return response()->json(['success' => false, 'message' => 'Product not found'], 404);
+        } catch (Exception $e) {
+            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Get the top 5 selling products.
+     */
+    public function topSales()
+    {
+        try {
+            // Since we use MongoDB and don't have a direct 'sales_count' on Product,
+            // we can aggregate from OrderItems or use rating_count as a popularity proxy.
+            // For now, we'll use rating_count and price as weight, or simply get top 5 products.
+            
+            $products = Product::where('status', true)
+                ->orderBy('rating_count', 'desc')
+                ->limit(10)
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Top sale products retrieved successfully',
+                'data' => $products
+            ], 200);
         } catch (Exception $e) {
             return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
         }

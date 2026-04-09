@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Tymon\JWTAuth\Facades\JWTAuth; // Import the Facade
 use Exception;
 
@@ -32,7 +33,14 @@ class AuthController extends Controller
                 'phone'          => 'required|string|max:255',
                 'email'          => 'required|email|unique:users,email',
                 'password'       => 'required|string|min:8',
+                'profile_image'  => 'sometimes|image|mimes:jpeg,png,jpg,gif|max:2048',
             ]);
+
+            $profileImagePath = null;
+            if ($request->hasFile('profile_image')) {
+                $path = $request->file('profile_image')->store('profile_images', 'public');
+                $profileImagePath = Storage::url($path);
+            }
 
             $user = User::create([
                 'first_name'     => $validated['first_name'],
@@ -43,6 +51,7 @@ class AuthController extends Controller
                 'email'          => $validated['email'],
                 'password'       => Hash::make($validated['password']),
                 'role'           => 'user', // Set default role
+                'profile_image'  => $profileImagePath,
             ]);
 
             Log::info("User Registered: {$user->email}");
@@ -69,7 +78,14 @@ class AuthController extends Controller
                 'email'          => 'required|email|unique:users,email',
                 'password'       => 'required|string|min:8',
                 'role'           => 'required|string|in:admin',
+                'profile_image'  => 'sometimes|image|mimes:jpeg,png,jpg,gif|max:2048',
             ]);
+
+            $profileImagePath = null;
+            if ($request->hasFile('profile_image')) {
+                $path = $request->file('profile_image')->store('profile_images', 'public');
+                $profileImagePath = Storage::url($path);
+            }
 
             $user = User::create([
                 'first_name'     => $validated['first_name'],
@@ -80,6 +96,7 @@ class AuthController extends Controller
                 'email'          => $validated['email'],
                 'password'       => Hash::make($validated['password']),
                 'role'           => $validated['role'],
+                'profile_image'  => $profileImagePath,
             ]);
 
             Log::info("Admin Registered: {$user->email}");
@@ -134,6 +151,50 @@ class AuthController extends Controller
             ]);
         } catch (Exception $e) {
             return response()->json(['success' => false, 'message' => 'Failed to retrieve profile', 'error' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Update user profile
+     */
+    public function updateProfile(Request $request)
+    {
+        try {
+            $user = auth('api')->user();
+            
+            $validated = $request->validate([
+                'first_name'    => 'sometimes|required|string|max:255',
+                'last_name'     => 'sometimes|required|string|max:255',
+                'gender'        => 'sometimes|required|string|max:255',
+                'date_of_birth' => 'sometimes|required|date',
+                'phone'         => 'sometimes|required|string|max:255',
+                'profile_image' => 'sometimes|image|mimes:jpeg,png,jpg,gif|max:2048',
+            ]);
+
+            $data = $request->except('profile_image');
+
+            if ($request->hasFile('profile_image')) {
+                // Delete old image if it exists
+                if ($user->profile_image) {
+                    $oldPath = str_replace('/storage/', '', $user->profile_image);
+                    Storage::disk('public')->delete($oldPath);
+                }
+
+                $path = $request->file('profile_image')->store('profile_images', 'public');
+                $data['profile_image'] = Storage::url($path);
+            }
+
+            $user->update($data);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Profile updated successfully',
+                'data' => $user->fresh()
+            ]);
+        } catch (ValidationException $e) {
+            return response()->json(['success' => false, 'errors' => $e->errors()], 422);
+        } catch (Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Profile update failed', 'error' => $e->getMessage()], 500);
         }
     }
 

@@ -1,4 +1,5 @@
 <?php
+use App\Http\Controllers\Admin\PaymentController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\AuthController;
@@ -105,5 +106,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::resource('categories', App\Http\Controllers\Admin\CategoryController::class);
         Route::resource('products', App\Http\Controllers\Admin\ProductController::class);
         Route::resource('orders', App\Http\Controllers\Admin\OrderController::class);
+        Route::resource('users', App\Http\Controllers\Admin\UserController::class);
+        Route::resource('payments', PaymentController::class)->only(['index', 'show']);
     });
 });

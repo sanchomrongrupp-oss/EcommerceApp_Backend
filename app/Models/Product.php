@@ -22,12 +22,18 @@ class Product extends Model
         'price',
         'rating_avg',
         'rating_count',
+        'status',
+        'size',
+        'color',
     ];
 
     // Cast size and color to array
     protected $casts = [
         'rating_avg' => 'float',
         'rating_count' => 'integer',
+        'status' => 'boolean',
+        'size' => 'array',
+        'color' => 'array',
     ];
 
     // Get the category that the product belongs to

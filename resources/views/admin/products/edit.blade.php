@@ -46,6 +46,53 @@
                     @error('description') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
                 </div>
 
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label for="size" class="block text-gray-700 text-sm font-bold mb-2">Sizes (comma-separated)</label>
+                        <input type="text" name="size" id="size"
+                            value="{{ old('size', is_array($product->size) ? implode(', ', $product->size) : $product->size) }}"
+                            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                            placeholder="e.g. S, M, L, XL">
+                        @error('size') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
+                        <label for="color" class="block text-gray-700 text-sm font-bold mb-2">Colors
+                            (comma-separated)</label>
+                        <input type="text" name="color" id="color"
+                            value="{{ old('color', is_array($product->color) ? implode(', ', $product->color) : $product->color) }}"
+                            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                            placeholder="e.g. Red, Blue, Black">
+                        @error('color') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label for="rating_avg" class="block text-gray-700 text-sm font-bold mb-2">Rating Average
+                            (0-5)</label>
+                        <input type="number" step="0.1" min="0" max="5" name="rating_avg" id="rating_avg"
+                            value="{{ old('rating_avg', $product->rating_avg) }}"
+                            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                        @error('rating_avg') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
+                        <label for="rating_count" class="block text-gray-700 text-sm font-bold mb-2">Rating Count</label>
+                        <input type="number" name="rating_count" id="rating_count"
+                            value="{{ old('rating_count', $product->rating_count) }}"
+                            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                        @error('rating_count') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="flex items-center">
+                        <input type="checkbox" name="status" id="status" class="form-checkbox h-5 w-5 text-blue-600"
+                            value="1" {{ old('status', $product->status) ? 'checked' : '' }}>
+                        <span class="ml-2 text-gray-700 text-sm font-bold">Active / Visible</span>
+                    </label>
+                    @error('status') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                </div>
+
                 <div class="mb-4">
                     <label for="image" class="block text-gray-700 text-sm font-bold mb-2">Image</label>
                     @if($product->image)

@@ -1,6 +1,8 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+
+Route::get('aba-test', function() { return 'Aba Route is Working!'; });
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CategoryController;
@@ -10,6 +12,8 @@ use App\Http\Controllers\CartsControllers;
 use App\Http\Controllers\CartItemControllers;
 use App\Http\Controllers\OrdersControllers;
 use App\Http\Controllers\OrderItemsControllers;
+use App\Http\Controllers\CheckOutControllers;
+use App\Http\Controllers\AbaPaywayController;
 
 // Public routes
 // Route::post('/register/user', [AuthController::class, 'registerUser']);
@@ -17,11 +21,17 @@ Route::post('/register/users', [AuthController::class, 'registerUser']); // Alia
 Route::post('/register/admin', [AuthController::class, 'registerAdmin']);
 Route::post('/login', [AuthController::class, 'login']);
 
+// Top Sale Products (Public)
+Route::get('/products/top-sales', [ProductController::class, 'topSales']);
+Route::post('aba-v2/init', [AbaPaywayController::class, 'createPayment']);
+Route::get('aba-v2/redirect', [AbaPaywayController::class, 'renderCheckout']);
+
 // Protected routes for all authenticated users
 Route::middleware('auth.jwt')->group(function () {
     Route::get('/profile', [AuthController::class, 'profile']);
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::post('/refresh', [AuthController::class, 'refresh']);
+    Route::post('/profile/update', [AuthController::class, 'updateProfile']);
 
     // Categories Read Access
     Route::get('/categories', [CategoryController::class, 'index']);
@@ -42,6 +52,8 @@ Route::middleware('auth.jwt')->group(function () {
     Route::apiResource('cart-items', CartItemControllers::class);
     Route::apiResource('orders', OrdersControllers::class);
     Route::apiResource('order-items', OrderItemsControllers::class);
+    Route::post('checkout', [CheckOutControllers::class, 'process']);
+    Route::post('payway/checkout', [AbaPaywayController::class, 'checkout']);
 });
 
 // Admin-only routes for Management
@@ -67,3 +79,7 @@ Route::middleware(['auth.jwt', 'admin'])->prefix('admin')->group(function () {
     // Orders Management (Admins might need to view/manage all orders) - Optional but good practice
     // Route::apiResource('orders', OrdersControllers::class)->only(['index', 'update', 'destroy']);
 });
+
+// ABA PayWay Webhook
+Route::post('/payway/webhook', [AbaPaywayController::class, 'webhook']);
+Route::post('/payway/callback', [AbaPaywayController::class, 'callback']);

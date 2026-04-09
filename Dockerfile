@@ -1,16 +1,15 @@
-# Use official PHP image
 FROM php:8.2-cli
 
-# Install system dependencies
+# Set Composer memory
+ENV COMPOSER_MEMORY_LIMIT=-1
+
+# Install system dependencies + PHP extensions
 RUN apt-get update && apt-get install -y \
     git curl unzip libzip-dev libpng-dev libonig-dev libxml2-dev zip \
+    libicu-dev g++ libcurl4-openssl-dev pkg-config \
+    && docker-php-ext-install intl gd bcmath pcntl mbstring pdo pdo_mysql zip exif xml \
+    && pecl install mongodb && docker-php-ext-enable mongodb \
     && rm -rf /var/lib/apt/lists/*
-
-# Install PHP extensions
-RUN docker-php-ext-install pdo pdo_mysql mbstring zip exif pcntl
-
-# Install MongoDB extension
-RUN pecl install mongodb && docker-php-ext-enable mongodb
 
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
@@ -24,13 +23,11 @@ COPY . .
 # Install Laravel dependencies
 RUN composer install --no-dev --optimize-autoloader
 
-# Set permissions
+# Permissions + storage link
 RUN chmod -R 775 storage bootstrap/cache
-
-# Create storage symlink
 RUN php artisan storage:link || true
 
-# Expose port 10000
+# Expose port
 EXPOSE 10000
 
 # Start Laravel server
